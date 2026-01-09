@@ -1,4 +1,5 @@
---// Aureus Hub | Final Optimized UI
+--// Aureus Hub | Final Stable English UI
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
@@ -6,31 +7,29 @@ local CoreGui = game:GetService("CoreGui")
 local State = { 
     Visible = true,
     SilentAim = false,
+    ShootKey = Enum.KeyCode.E, 
+    IsBinding = false,
     SavedSize = UDim2.new(0, 520, 0, 360)
 }
 
---// Main Container
+--// Main UI Creation
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "AureusHub_UI"
-
--- Əsas Çərçivə
 local Main = Instance.new("Frame", ScreenGui)
-Main.Name = "MainFrame"
+Main.Name = "AureusMain"
 Main.Size = State.SavedSize
 Main.Position = UDim2.new(0.5, -260, 0.5, -180)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Daha tünd qara
 Main.BorderSizePixel = 0
-Main.ClipsDescendants = true -- Aşağı hissənin yox olması üçün vacibdir
+Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
---// TOP BAR (Həmişə görünən hissə)
+--// 1. TOP BAR (Sürüşdürmə pəncərə kiçik olsa da işləyir)
 local TopBar = Instance.new("Frame", Main)
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 45)
 TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 TopBar.BorderSizePixel = 0
 
--- Sürüşdürmə Sistemi
 local dragging, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -51,56 +50,49 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
---// LOGO VƏ NEON YAZI (Aureus Hub)
-local LogoContainer = Instance.new("Frame", TopBar)
-LogoContainer.Size = UDim2.new(0.5, 0, 1, 0)
-LogoContainer.Position = UDim2.new(0, 15, 0, 0)
-LogoContainer.BackgroundTransparency = 1
+--// 2. NEON BLURLU TITLE (Aureus Hub)
+-- Blur effekti üçün kölgə qatı
+local TitleShadow = Instance.new("TextLabel", TopBar)
+TitleShadow.Text = " Aureus Hub"
+TitleShadow.Size = UDim2.new(0.5, 0, 1, 0)
+TitleShadow.Position = UDim2.new(0, 2, 0, 2)
+TitleShadow.TextColor3 = Color3.fromRGB(150, 0, 0) -- Tünd qırmızı blur üçün
+TitleShadow.Font = Enum.Font.GothamBold
+TitleShadow.TextSize = 20
+TitleShadow.BackgroundTransparency = 1
+TitleShadow.TextXAlignment = Enum.TextXAlignment.Left
 
--- Neon Kölgə (Blur effekti üçün)
-local Shadow = Instance.new("TextLabel", LogoContainer)
-Shadow.Text = "Aureus Hub"
-Shadow.Size = UDim2.new(1, 0, 1, 0)
-Shadow.TextColor3 = Color3.fromRGB(255, 0, 0)
-Shadow.TextTransparency = 0.6
-Shadow.Font = Enum.Font.GothamBold
-Shadow.TextSize = 21
-Shadow.BackgroundTransparency = 1
-Shadow.TextXAlignment = Enum.TextXAlignment.Left
-
--- Əsas Yazı (Aureus = Qırmızı, Hub = Ağ)
-local Title = Instance.new("TextLabel", LogoContainer)
-Title.Size = UDim2.new(1, 0, 1, 0)
-Title.BackgroundTransparency = 1
+local Title = Instance.new("TextLabel", TopBar)
+Title.Text = " Aureus Hub"
+Title.Size = UDim2.new(0.5, 0, 1, 0)
+Title.TextColor3 = Color3.fromRGB(255, 0, 0) -- Parlaq Neon Qırmızı
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
-Title.RichText = true
-Title.Text = '<font color="rgb(255,0,0)">Aureus</font> <font color="rgb(255,255,255)">Hub</font>'
+Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
---// KONTROL DÜYMƏLƏRİ (X və -)
+--// 3. CONTROLS (X və - Düymələri)
 local Controls = Instance.new("Frame", TopBar)
-Controls.Size = UDim2.new(0, 80, 0, 30)
-Controls.Position = UDim2.new(1, -85, 0.5, -15)
+Controls.Size = UDim2.new(0, 70, 0, 30)
+Controls.Position = UDim2.new(1, -75, 0.5, -15)
 Controls.BackgroundTransparency = 1
 
 local function CreateBtn(txt, xPos, color, callback)
     local btn = Instance.new("TextButton", Controls)
-    btn.Size = UDim2.new(0, 30, 0, 30)
+    btn.Size = UDim2.new(0, 28, 0, 28)
     btn.Position = UDim2.new(0, xPos, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     btn.Text = txt
     btn.TextColor3 = color
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
     Instance.new("UICorner", btn)
     btn.MouseButton1Click:Connect(function() callback(btn) end)
     return btn
 end
 
-CreateBtn("X", 45, Color3.fromRGB(255, 80, 80), function() ScreenGui:Destroy() end)
+CreateBtn("X", 35, Color3.fromRGB(255, 80, 80), function() ScreenGui:Destroy() end)
 
-local MiniBtn = CreateBtn("-", 5, Color3.fromRGB(255, 255, 255), function(self)
+local MiniBtn = CreateBtn("-", 0, Color3.fromRGB(255, 255, 255), function(self)
     State.Visible = not State.Visible
     if not State.Visible then
         State.SavedSize = Main.Size -- Hazırkı ölçünü yadda saxla
@@ -112,31 +104,30 @@ local MiniBtn = CreateBtn("-", 5, Color3.fromRGB(255, 255, 255), function(self)
     end
 end)
 
---// BODY CONTENT (İçindəki funksiyalar)
+--// 4. BODY CONTENT (Kiçildikdə gizlənəcək hissə)
 local Body = Instance.new("Frame", Main)
 Body.Name = "Body"
-Body.Size = UDim2.new(1, -20, 1, -65)
-Body.Position = UDim2.new(0, 10, 0, 55)
+Body.Size = UDim2.new(1, 0, 1, -45)
+Body.Position = UDim2.new(0, 0, 0, 45)
 Body.BackgroundTransparency = 1
 
--- Sol Sidebar
 local Sidebar = Instance.new("Frame", Body)
-Sidebar.Size = UDim2.new(0.3, 0, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+Sidebar.Size = UDim2.new(0.3, -15, 0.9, 0)
+Sidebar.Position = UDim2.new(0.02, 0, 0.05, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Instance.new("UICorner", Sidebar)
 
--- Sağ Kontent Sahəsi
 local Content = Instance.new("Frame", Body)
-Content.Size = UDim2.new(0.68, 0, 1, 0)
-Content.Position = UDim2.new(0.32, 0, 0, 0)
-Content.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+Content.Size = UDim2.new(0.64, 0, 0.9, 0)
+Content.Position = UDim2.new(0.34, 0, 0.05, 0)
+Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Instance.new("UICorner", Content)
 
--- Nümunə Toggle (Silent Aim)
+--// 5. FEATURES
 local SilentToggle = Instance.new("TextButton", Content)
 SilentToggle.Size = UDim2.new(0.9, 0, 0, 45)
-SilentToggle.Position = UDim2.new(0.05, 0, 0.05, 0)
-SilentToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SilentToggle.Position = UDim2.new(0.05, 0, 0.1, 0)
+SilentToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 SilentToggle.Text = "Silent Aim: [OFF]"
 SilentToggle.TextColor3 = Color3.white
 SilentToggle.Font = Enum.Font.Gotham
@@ -145,7 +136,7 @@ Instance.new("UICorner", SilentToggle)
 SilentToggle.MouseButton1Click:Connect(function()
     State.SilentAim = not State.SilentAim
     SilentToggle.Text = "Silent Aim: [" .. (State.SilentAim and "ON" or "OFF") .. "]"
-    SilentToggle.BackgroundColor3 = State.SilentAim and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(30, 30, 30)
+    SilentToggle.BackgroundColor3 = State.SilentAim and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(35, 35, 35)
 end)
 
-print("Aureus Hub Loaded with Logo and Neon!")
+print("Aureus Hub Loaded Successfully")
