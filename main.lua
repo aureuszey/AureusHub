@@ -1,4 +1,4 @@
---// Aureus Hub | Fixed Scaling & Professional English UI
+--// Aureus Hub | Final Stable English UI
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
@@ -22,34 +22,39 @@ Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
---// 1. STABLE DRAGGING SYSTEM
+--// 1. TOP BAR (Sadece burdan tutub terpenmek olar)
+local TopBar = Instance.new("Frame", Main)
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.BackgroundTransparency = 1
+
+-- Sürüşdürmə Sistemi (Yalnız TopBar üçün)
 local dragging, dragInput, dragStart, startPos
-Main.InputBegan:Connect(function(input)
+TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = Main.Position
     end
 end)
-Main.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
-end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
         Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
+
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
---// 2. PERFECT RESIZE SYSTEM (No Shaking)
+--// 2. PERFECT RESIZE SYSTEM (Aşağı küncdəki yaşıl nöqtə)
 local Resizer = Instance.new("Frame", Main)
-Resizer.Size = UDim2.new(0, 15, 0, 15)
-Resizer.Position = UDim2.new(1, -15, 1, -15)
+Resizer.Size = UDim2.new(0, 12, 0, 12)
+Resizer.Position = UDim2.new(1, -12, 1, -12)
 Resizer.BackgroundColor3 = Color3.fromRGB(0, 255, 140)
-Resizer.BackgroundTransparency = 0.6
+Resizer.ZIndex = 5
 Instance.new("UICorner", Resizer).CornerRadius = UDim.new(1, 0)
 
 local resizing = false
@@ -66,7 +71,6 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - resizeStartPos
-        -- Minimum size limits: 400x300
         Main.Size = UDim2.new(0, math.max(400, startSize.X.Offset + delta.X), 0, math.max(300, startSize.Y.Offset + delta.Y))
     end
 end)
@@ -75,17 +79,15 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then resizing = false end
 end)
 
---// 3. FIXED SCALING LAYOUT (Daxili hissələri bura yığırıq)
--- Sol Menyu (Faizlə)
+--// 3. FIXED SCALING LAYOUT
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0.3, -15, 0.82, 0)
+Sidebar.Size = UDim2.new(0.3, -15, 0.8, 0)
 Sidebar.Position = UDim2.new(0.02, 0, 0.15, 0)
 Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Instance.new("UICorner", Sidebar)
 
--- Sağ Panel (Faizlə)
 local Content = Instance.new("Frame", Main)
-Content.Size = UDim2.new(0.64, 0, 0.82, 0)
+Content.Size = UDim2.new(0.64, 0, 0.8, 0)
 Content.Position = UDim2.new(0.34, 0, 0.15, 0)
 Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Instance.new("UICorner", Content)
@@ -93,26 +95,23 @@ Instance.new("UICorner", Content)
 local PageList = Instance.new("UIListLayout", Content)
 PageList.Padding = UDim.new(0, 10)
 PageList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-PageList.SortOrder = Enum.SortOrder.LayoutOrder
 
---// 4. TOP BAR ELEMENTS
-local Title = Instance.new("TextLabel", Main)
+--// 4. HEADER ELEMENTS
+local Title = Instance.new("TextLabel", TopBar)
 Title.Text = "  AUREUS HUB"
-Title.Size = UDim2.new(0.4, 0, 0, 45)
-Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Size = UDim2.new(0.4, 0, 1, 0)
 Title.TextColor3 = Color3.fromRGB(0, 255, 140)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Controls (X and -)
-local Controls = Instance.new("Frame", Main)
+local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 70, 0, 30)
-Controls.Position = UDim2.new(1, -75, 0, 8)
+Controls.Position = UDim2.new(1, -75, 0.5, -15)
 Controls.BackgroundTransparency = 1
 
-local function CreateHeaderBtn(txt, xPos, color, callback)
+local function CreateBtn(txt, xPos, color, callback)
     local btn = Instance.new("TextButton", Controls)
     btn.Size = UDim2.new(0, 28, 0, 28)
     btn.Position = UDim2.new(0, xPos, 0, 0)
@@ -124,13 +123,13 @@ local function CreateHeaderBtn(txt, xPos, color, callback)
     btn.MouseButton1Click:Connect(callback)
 end
 
-CreateHeaderBtn("X", 35, Color3.fromRGB(255, 80, 80), function() ScreenGui:Destroy() end)
-CreateHeaderBtn("-", 0, Color3.fromRGB(255, 255, 255), function()
+CreateBtn("X", 35, Color3.fromRGB(255, 80, 80), function() ScreenGui:Destroy() end)
+CreateBtn("-", 0, Color3.fromRGB(255, 255, 255), function()
     State.Visible = not State.Visible
     Main:TweenSize(State.Visible and UDim2.new(0, Main.Size.X.Offset, 0, Main.Size.Y.Offset) or UDim2.new(0, Main.Size.X.Offset, 0, 45), "Out", "Quart", 0.3, true)
 end)
 
---// 5. MAIN TAB & BUTTONS
+--// 5. FEATURES
 local MainTabBtn = Instance.new("TextButton", Sidebar)
 MainTabBtn.Size = UDim2.new(0.9, 0, 0, 40)
 MainTabBtn.Position = UDim2.new(0.05, 0, 0, 10)
@@ -140,7 +139,6 @@ MainTabBtn.TextColor3 = Color3.white
 MainTabBtn.Font = Enum.Font.GothamSemibold
 Instance.new("UICorner", MainTabBtn)
 
--- Silent Aim Toggle
 local SilentToggle = Instance.new("TextButton", Content)
 SilentToggle.Size = UDim2.new(0.9, 0, 0, 45)
 SilentToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -155,7 +153,6 @@ SilentToggle.MouseButton1Click:Connect(function()
     SilentToggle.BackgroundColor3 = State.SilentAim and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(35, 35, 35)
 end)
 
--- Keybind Button
 local KeybindBtn = Instance.new("TextButton", Content)
 KeybindBtn.Size = UDim2.new(0.9, 0, 0, 45)
 KeybindBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -169,7 +166,6 @@ KeybindBtn.MouseButton1Click:Connect(function()
     KeybindBtn.Text = "... Press Any Key ..."
 end)
 
--- Keyboard Input for Keybinds
 UserInputService.InputBegan:Connect(function(input)
     if State.IsBinding and input.UserInputType == Enum.UserInputType.Keyboard then
         State.ShootKey = input.KeyCode
@@ -180,4 +176,4 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
-print("Aureus Hub | Stabilized Resize & English UI Loaded")
+print("Aureus Hub is Ready")
