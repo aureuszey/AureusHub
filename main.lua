@@ -8,27 +8,27 @@ local State = {
     Visible = true,
     SilentAim = false,
     ShootKey = Enum.KeyCode.E, 
-    IsBinding = false
+    IsBinding = false,
+    SavedSize = UDim2.new(0, 520, 0, 360) -- Ölçünü yadda saxlamaq üçün
 }
 
 --// Main UI Creation
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 local Main = Instance.new("Frame", ScreenGui)
 Main.Name = "AureusMain"
-Main.Size = UDim2.new(0, 520, 0, 360)
+Main.Size = State.SavedSize
 Main.Position = UDim2.new(0.5, -260, 0.5, -180)
 Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
---// 1. TOP BAR (Sadece burdan tutub terpenmek olar)
+--// 1. TOP BAR
 local TopBar = Instance.new("Frame", Main)
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 45)
 TopBar.BackgroundTransparency = 1
 
--- Sürüşdürmə Sistemi (Yalnız TopBar üçün)
 local dragging, dragInput, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -49,11 +49,11 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
---// 2. PERFECT RESIZE SYSTEM (Aşağı küncdəki yaşıl nöqtə)
+--// 2. PERFECT RESIZE SYSTEM
 local Resizer = Instance.new("Frame", Main)
 Resizer.Size = UDim2.new(0, 12, 0, 12)
 Resizer.Position = UDim2.new(1, -12, 1, -12)
-Resizer.BackgroundColor3 = Color3.fromRGB(0, 255, 140)
+Resizer.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Qırmızı neon rəngi
 Resizer.ZIndex = 5
 Instance.new("UICorner", Resizer).CornerRadius = UDim.new(1, 0)
 
@@ -72,6 +72,7 @@ UserInputService.InputChanged:Connect(function(input)
     if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - resizeStartPos
         Main.Size = UDim2.new(0, math.max(400, startSize.X.Offset + delta.X), 0, math.max(300, startSize.Y.Offset + delta.Y))
+        if State.Visible then State.SavedSize = Main.Size end
     end
 end)
 
@@ -100,7 +101,7 @@ PageList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 local Title = Instance.new("TextLabel", TopBar)
 Title.Text = "  AUREUS HUB"
 Title.Size = UDim2.new(0.4, 0, 1, 0)
-Title.TextColor3 = Color3.fromRGB(0, 255, 140)
+Title.TextColor3 = Color3.fromRGB(255, 0, 0) -- QIRMIZI NEON
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.BackgroundTransparency = 1
@@ -120,13 +121,22 @@ local function CreateBtn(txt, xPos, color, callback)
     btn.TextColor3 = color
     btn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", btn)
-    btn.MouseButton1Click:Connect(callback)
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
+    return btn
 end
 
 CreateBtn("X", 35, Color3.fromRGB(255, 80, 80), function() ScreenGui:Destroy() end)
-CreateBtn("-", 0, Color3.fromRGB(255, 255, 255), function()
+
+local MiniBtn = CreateBtn("-", 0, Color3.fromRGB(255, 255, 255), function(self)
     State.Visible = not State.Visible
-    Main:TweenSize(State.Visible and UDim2.new(0, Main.Size.X.Offset, 0, Main.Size.Y.Offset) or UDim2.new(0, Main.Size.X.Offset, 0, 45), "Out", "Quart", 0.3, true)
+    if not State.Visible then
+        State.SavedSize = Main.Size -- Bağlamazdan əvvəl ölçünü yadda saxla
+        Main:TweenSize(UDim2.new(0, Main.Size.X.Offset, 0, 45), "Out", "Quart", 0.3, true)
+        self.Text = "+"
+    else
+        Main:TweenSize(State.SavedSize, "Out", "Quart", 0.3, true)
+        self.Text = "-"
+    end
 end)
 
 --// 5. FEATURES
@@ -150,7 +160,7 @@ Instance.new("UICorner", SilentToggle)
 SilentToggle.MouseButton1Click:Connect(function()
     State.SilentAim = not State.SilentAim
     SilentToggle.Text = "Silent Aim: [" .. (State.SilentAim and "ON" or "OFF") .. "]"
-    SilentToggle.BackgroundColor3 = State.SilentAim and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(35, 35, 35)
+    SilentToggle.BackgroundColor3 = State.SilentAim and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(35, 35, 35)
 end)
 
 local KeybindBtn = Instance.new("TextButton", Content)
